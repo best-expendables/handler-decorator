@@ -1,6 +1,7 @@
 package handler_decorator
 
 import (
+	"context"
 	"net/http"
 
 	nrcontext "bitbucket.org/snapmartinc/newrelic-context"
@@ -8,44 +9,49 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type HandlerCreatorFunc func(db *gorm.DB, redis *redis.Client) http.HandlerFunc
+type HandlerCreatorFunc func(decorator HandlerDecorator) http.HandlerFunc
 
-type handlerDecorator struct {
+type HandlerDecorator struct {
 	db          *gorm.DB
 	redisClient *redis.Client
 }
 
-type Option func(h *handlerDecorator) *handlerDecorator
+func (b *HandlerDecorator) CloneWithContext(ctx context.Context) HandlerDecorator {
+	clone := HandlerDecorator{}
+	if b.db != nil {
+		clone.db = nrcontext.SetTxnToGorm(ctx, b.db)
+	}
+	if b.redisClient != nil {
+		clone.redisClient = nrcontext.WrapRedisClient(ctx, b.redisClient)
+	}
+	return clone
+}
 
-func AddRedisToDecorator(r *redis.Client) func(h *handlerDecorator) *handlerDecorator {
-	return func(h *handlerDecorator) *handlerDecorator {
+type Option func(h *HandlerDecorator) *HandlerDecorator
+
+func AddRedisToDecorator(r *redis.Client) func(h *HandlerDecorator) *HandlerDecorator {
+	return func(h *HandlerDecorator) *HandlerDecorator {
 		h.redisClient = r
 		return h
 	}
 }
-func AddDBToDecorator(db *gorm.DB) func(h *handlerDecorator) *handlerDecorator {
-	return func(h *handlerDecorator) *handlerDecorator {
+func AddDBToDecorator(db *gorm.DB) func(h *HandlerDecorator) *HandlerDecorator {
+	return func(h *HandlerDecorator) *HandlerDecorator {
 		h.db = db
 		return h
 	}
 }
 
-func NewHandlerDecorator(options ...Option) *handlerDecorator {
-	baseHandler := &handlerDecorator{}
+func NewHandlerDecorator(options ...Option) *HandlerDecorator {
+	baseHandler := &HandlerDecorator{}
 	for i := range options {
 		options[i](baseHandler)
 	}
 	return baseHandler
 }
 
-func (b *handlerDecorator) NewRelicDecorate(handlerCreatorFunc func(db *gorm.DB, redis *redis.Client) http.HandlerFunc) http.HandlerFunc {
+func (b *HandlerDecorator) NewRelicDecorate(handlerCreatorFunc func(decorator HandlerDecorator) http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		if b.db != nil {
-			b.db = nrcontext.SetTxnToGorm(request.Context(), b.db)
-		}
-		if b.redisClient != nil {
-			b.redisClient = nrcontext.WrapRedisClient(request.Context(), b.redisClient)
-		}
-		handlerCreatorFunc(b.db, b.redisClient).ServeHTTP(writer, request)
+		handlerCreatorFunc(b.CloneWithContext(request.Context())).ServeHTTP(writer, request)
 	}
 }
