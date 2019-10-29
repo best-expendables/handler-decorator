@@ -27,11 +27,11 @@ func (b *HandlerDecorator) cloneWithContext(ctx context.Context) HandlerDecorato
 	return clone
 }
 
-func (b *HandlerDecorator) GetDB() *gorm.DB {
+func (b HandlerDecorator) GetDB() *gorm.DB {
 	return b.db
 }
 
-func (b *HandlerDecorator) GetRedisClient() *redis.Client {
+func (b HandlerDecorator) GetRedisClient() *redis.Client {
 	return b.redisClient
 }
 
