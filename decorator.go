@@ -27,6 +27,14 @@ func (b *HandlerDecorator) CloneWithContext(ctx context.Context) HandlerDecorato
 	return clone
 }
 
+func (b *HandlerDecorator) GetDB() *gorm.DB {
+	return b.db
+}
+
+func (b *HandlerDecorator) GetRedisClient() *redis.Client {
+	return b.redisClient
+}
+
 type Option func(h *HandlerDecorator) *HandlerDecorator
 
 func AddRedisToDecorator(r *redis.Client) func(h *HandlerDecorator) *HandlerDecorator {
