@@ -16,7 +16,7 @@ type HandlerDecorator struct {
 	redisClient *redis.Client
 }
 
-func (b *HandlerDecorator) CloneWithContext(ctx context.Context) HandlerDecorator {
+func (b *HandlerDecorator) cloneWithContext(ctx context.Context) HandlerDecorator {
 	clone := HandlerDecorator{}
 	if b.db != nil {
 		clone.db = nrcontext.SetTxnToGorm(ctx, b.db)
@@ -60,6 +60,6 @@ func NewHandlerDecorator(options ...Option) *HandlerDecorator {
 
 func (b *HandlerDecorator) NewRelicDecorate(handlerCreatorFunc func(decorator HandlerDecorator) http.HandlerFunc) http.HandlerFunc {
 	return func(writer http.ResponseWriter, request *http.Request) {
-		handlerCreatorFunc(b.CloneWithContext(request.Context())).ServeHTTP(writer, request)
+		handlerCreatorFunc(b.cloneWithContext(request.Context())).ServeHTTP(writer, request)
 	}
 }
