@@ -1,11 +1,11 @@
-module bitbucket.org/snapmartinc/handler-decorator
+module github.com/best-expendables/handler-decorator
 
 go 1.12
 
 require (
-	bitbucket.org/snapmartinc/newrelic-context v0.0.0-20190723030343-e091ae63165b
 	github.com/alicebob/gopher-json v0.0.0-20180125190556-5a6b3ba71ee6 // indirect
 	github.com/alicebob/miniredis v2.5.0+incompatible // indirect
+	github.com/best-expendables/newrelic-context v0.0.0-20190723030343-e091ae63165b
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/jinzhu/gorm v1.9.11

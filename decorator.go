@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	nrcontext "bitbucket.org/snapmartinc/newrelic-context"
+	nrcontext "github.com/best-expendables/newrelic-context"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 )
